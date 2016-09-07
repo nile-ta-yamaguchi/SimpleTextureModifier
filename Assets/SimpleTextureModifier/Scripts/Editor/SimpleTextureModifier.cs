@@ -379,6 +379,9 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		SetLabelSetingsDirty ();
 	}
 
+	static readonly string TTextureModifier="modifier";
+	static readonly string TTextureSetting="setting";
+
 	TextureModifierType effecterType=TextureModifierType.None;
 	TextureModifierType modifierType=TextureModifierType.None;
 	TextureModifierType outputType=TextureModifierType.None;
@@ -386,6 +389,17 @@ public class SimpleTextureModifier : AssetPostprocessor {
 	void OnPreprocessTexture(){
 		//return;
 		var importer = (assetImporter as TextureImporter);
+		string filename = System.IO.Path.GetFileNameWithoutExtension (assetPath);
+		var filenameParts = filename.ToLower().Split("_".ToCharArray()).ToList ();
+		foreach (string part in filenameParts) {
+			if(part.StartsWith(TTextureModifier)){
+				PersModifier (part.Substring(TTextureModifier.Length));
+			}
+			if(part.StartsWith(TTextureSetting)){
+				PersSetting (part.Substring(TTextureSetting.Length));
+			}
+		}
+
 		UnityEngine.Object obj=AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		var labels=new List<string>(AssetDatabase.GetLabels(obj));
         if (labels == null || labels.Count == 0) {
@@ -429,7 +443,115 @@ public class SimpleTextureModifier : AssetPostprocessor {
 				importer.textureFormat = TextureImporterFormat.ARGB32;
 		}
 	}
-	
+
+	void PersModifier(string tokens)
+	{
+		var queue = new Queue<char> (tokens.ToCharArray ());
+		while (queue.Count > 0) {
+			char token = queue.Dequeue ();
+			switch (token) {
+			case 'm':
+				effecterType = TextureModifierType.PremultipliedAlpha;
+				break;
+			case 'a':
+				effecterType = TextureModifierType.AlphaBleed;
+				break;
+			case 'd':
+				effecterType = TextureModifierType.FloydSteinberg;
+				break;
+			case 'r':
+				modifierType = TextureModifierType.Reduced16bits;
+				break;
+			case 'f':
+				modifierType = TextureModifierType.C16bits;
+				break;
+			case 'c':
+				if (queue.Count > 0) {
+					if (queue.Peek () == 'n') {
+						outputType = TextureModifierType.CCompressedNA;
+						queue.Dequeue ();
+						break;
+					} else if (queue.Peek () == 'w') {
+						outputType = TextureModifierType.CCompressedWA;
+						queue.Dequeue ();
+						break;
+					}
+				}
+				outputType = TextureModifierType.CCompressed;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	void PersSetting(string tokens)
+	{
+		var importer = (assetImporter as TextureImporter);
+		var queue = new Queue<char> (tokens.ToCharArray ());
+		while (queue.Count > 0) {
+			char token = queue.Dequeue ();
+			switch (token) {
+			case 't':
+				importer.textureType = TextureImporterType.Image;
+				break;
+			case 'n':
+				importer.textureType = TextureImporterType.Bump;
+				break;
+			case 'e':
+				importer.textureType = TextureImporterType.GUI;
+				break;
+			case 's':
+				importer.textureType = TextureImporterType.Sprite;
+				break;
+			case 'l':
+				importer.textureType = TextureImporterType.Lightmap;
+				break;
+			case 'a':
+				importer.textureType = TextureImporterType.Advanced;
+				break;
+			case 'f':
+				if (queue.Count > 0) {
+					if (queue.Peek () == 'c') {
+						importer.textureFormat = TextureImporterFormat.AutomaticCompressed;
+						queue.Dequeue ();
+						break;
+					} else if (queue.Peek () == 't') {
+						importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+						queue.Dequeue ();
+						break;
+					} else if (queue.Peek () == 'f') {
+						importer.textureFormat = TextureImporterFormat.Automatic16bit;
+						queue.Dequeue ();
+						break;
+					}
+				}
+				importer.textureFormat = TextureImporterFormat.AutomaticCompressed;
+				break;
+			case 'm':				
+				int num = GetNum (queue);
+				if (num <= 0)
+					break;
+				int max = (int)Mathf.Pow (2,Mathf.Floor (Mathf.Log (num - 1,2)) + 1);
+				if (max >= 32 && max <= 8192)
+					importer.maxTextureSize = max;
+				break;
+			}
+		}
+	}
+
+	int GetNum(Queue<char> queue)
+	{
+		var digit = new List<char> ();
+		while (queue.Count > 0 && Char.IsDigit (queue.Peek ())) {
+			digit.Add (queue.Dequeue ());
+		}
+		if (digit.Count > 0) {
+			return int.Parse (new String (digit.ToArray ()));
+		}
+		return 0;
+	}
+
 	void OnPostprocessTexture (Texture2D texture){
 		if(effecterType==TextureModifierType.None && modifierType==TextureModifierType.None && outputType==TextureModifierType.None)
 			return;
