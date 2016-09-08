@@ -7,9 +7,10 @@ using System.IO;
 using System.Linq;
 using System;
 
+namespace SimpleTextureModifier {
 [InitializeOnLoad]
-public class StartupSimpleTextureModifier {
-    static StartupSimpleTextureModifier() {
+public class StartupTextureModifier {
+    static StartupTextureModifier() {
         Debug.Log("Initialized TextureModifier");
         EditorUserBuildSettings.activeBuildTargetChanged += OnChangePlatform;
     }
@@ -19,19 +20,19 @@ public class StartupSimpleTextureModifier {
         Debug.Log(" TextureModifier Convert Compress Texture");
         string labels = "t:Texture";
         string clabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.compressOutputs){
+		foreach(var type in TextureModifier.compressOutputs){
 			clabels+=" l:"+type.ToString();
 		}
 		string rlabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.RGBA16bitsOutputs){
+		foreach(var type in TextureModifier.RGBA16bitsOutputs){
 			rlabels+=" l:"+type.ToString();
 		}
 		string plabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.PNGOutputs){
+		foreach(var type in TextureModifier.PNGOutputs){
 			plabels+=" l:"+type.ToString();
 		}
 		string jlabels = "t:Texture";
-		foreach(var type in SimpleTextureModifier.JPGOutputs){
+		foreach(var type in TextureModifier.JPGOutputs){
 			jlabels+=" l:"+type.ToString();
 		}
 		AssetDatabase.StartAssetEditing ();
@@ -126,7 +127,7 @@ public class StartupSimpleTextureModifier {
 	}
 }
 
-public class SimpleTextureModifier : AssetPostprocessor {
+public class TextureModifier : AssetPostprocessor {
 	public static readonly string KEY = "Texture Output Enable";
 	public static readonly string FORCESTMSETTING = "Force STM Setting";
 
@@ -192,23 +193,6 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		}
 	}
 	
-	readonly static List<List<Position2>> bleedTable;
-	static SimpleTextureModifier(){
-		bleedTable=new List<List<Position2>>();
-		for(int i=1;i<=8;i++){
-			var bT=new List<Position2>();
-			for(int x=-i;x<=i;x++){
-				bT.Add(new Position2(x,i));
-				bT.Add(new Position2(-x,-i));
-			}
-			for(int y=-i+1;y<=i-1;y++){
-				bT.Add(new Position2(i,y));
-				bT.Add(new Position2(-i,-y));
-			}
-			bleedTable.Add(bT);
-		}
-	}
-
 	readonly static Type inspectorWindowType = Assembly.GetAssembly(typeof(EditorWindow)).GetType ("UnityEditor.InspectorWindow");
 	readonly static Type labelGUIType = Assembly.GetAssembly(typeof(EditorWindow)).GetType ("UnityEditor.LabelGUI");
 	readonly static FieldInfo m_LabelGUIField = inspectorWindowType.GetField("m_LabelGUI"
@@ -869,56 +853,6 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		return np;
 	}
 
-	static public Color[] AlphaBleedOld(Color[] pixels,int width,int height){
-		Color[] np= new Color[height*width]; 
-		for (var y = 0; y < height; y++) {
-			for (var x = 0; x < width; x++) {
-				int position=y*width+x;
-				if (pixels [position].a <= 0.95f) {
-					float ra=0.0f;
-					float ga=0.0f;
-					float ba=0.0f;
-					float ca=0.0f;
-					int index=0;
-					foreach(var bt in bleedTable){
-						float r=0.0f;
-						float g=0.0f;
-						float b=0.0f;
-						float c=0.0f;
-						foreach(var pt in bt){
-							int xp=x+pt.x;
-							int yp=y+pt.y;
-							if (xp >= 0 && xp < width && yp >= 0 && yp < height) {
-								int pos=yp*width+xp;
-								float ad=pixels[pos].a;
-								r+=pixels[pos].r*ad;	
-								g+=pixels[pos].g*ad;	
-								b+=pixels[pos].b*ad;
-								c+=ad;
-							}
-						}
-//						float fac=Mathf.Min(1.0f,(float)(8-index)/4.0f);
-						float fac=Mathf.Min(1.0f,(float)(10-index)/8.0f);
-						ra+=r*fac;
-						ga+=g*fac;
-						ba+=b*fac;
-						ca+=c*fac;
-						index++;
-					}
-					float ar=1.0f-pixels[position].a;
-					np[position]=
-						new Color( ra/ca*ar+pixels[position].r*pixels[position].a
-					    	      ,ga/ca*ar+pixels[position].g*pixels[position].a
-					        	  ,ba/ca*ar+pixels[position].b*pixels[position].a
-						    	  ,pixels[position].a);
-
-				}else
-					np[position]=pixels[position];
-			}
-		}
-		return np;
-	}
-
 	const float k1Per256 = 1.0f / 255.0f;
 	const float k1Per16 = 1.0f / 15.0f;
 	const float k3Per16 = 3.0f / 15.0f;
@@ -1011,4 +945,5 @@ public class SimpleTextureModifier : AssetPostprocessor {
 		}
 		return pixels;
 	}
+}
 }
