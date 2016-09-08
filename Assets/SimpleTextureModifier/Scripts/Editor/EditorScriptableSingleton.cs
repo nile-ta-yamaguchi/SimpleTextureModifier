@@ -9,7 +9,7 @@ public class EditorScriptableSingleton<T> : ScriptableObject where T : Scriptabl
 	public static T instance {
 		get {
 			if (EditorScriptableSingleton<T>.s_Instance == null) {
-				EditorScriptableSingleton<T>.CreateAndLoad();
+				EditorScriptableSingleton<T>.CreateOrLoad();
 			}
 			return EditorScriptableSingleton<T>.s_Instance;
 		}
@@ -23,15 +23,24 @@ public class EditorScriptableSingleton<T> : ScriptableObject where T : Scriptabl
 		}
 	}
 
-	private static void CreateAndLoad() {
+	private static void CreateOrLoad() {
 		string filePath = EditorScriptableSingleton<T>.GetFilePath();
 		if (!string.IsNullOrEmpty(filePath)) {
-			InternalEditorUtility.LoadSerializedFileAndForget(filePath);
+			var objs=InternalEditorUtility.LoadSerializedFileAndForget(filePath);
+			if (objs.Length > 0)
+				s_Instance = objs [0] as T;
 		}
 		if (EditorScriptableSingleton<T>.s_Instance == null) {
 			T t = ScriptableObject.CreateInstance<T>();
 			t.hideFlags = HideFlags.HideAndDontSave;
+			s_Instance = t;
+			var b = s_Instance as EditorScriptableSingleton<T>;
+			b.OnCreateInstance();
 		}
+	}
+
+	protected virtual void OnCreateInstance() {
+		return;
 	}
 
 	public static void Save(bool saveAsText=true) {

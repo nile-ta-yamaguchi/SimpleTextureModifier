@@ -128,9 +128,22 @@ public class StartupTextureModifier {
 }
 
 public class TextureModifier : AssetPostprocessor {
-	public static readonly string KEY = "Texture Output Enable";
-	public static readonly string FORCESTMSETTING = "Force STM Setting";
+	public static readonly string TextureOutput = "Texture Output Enable";
+	public static readonly string FORCEFORMATSETTING = "Force Format Setting";
 
+	public static readonly string FORCEQUALITYSETTING = "Force Quality Setting";
+	public static readonly string COMPRESSIONQUALITY = "Compression Quality";
+	public static readonly string FORCESPLITALPHA = "Force Split Alpha";
+
+	public static readonly string FORCIOSQUALITYSETTING = "Force IOS Setting";
+	public static readonly string IOSQUALITY = "IOS Compression Quality";
+	public static readonly string IOSSPLITALPHA = "IOS Split Alpha";
+
+	public static readonly string FORCEANDROIDQUALITYSETTING = "Force Android Setting";
+	public static readonly string ANDROIDQUALITY = "Android Compression Quality";
+	public static readonly string ANDROIDSPLITALPHA = "Android Split Alpha";
+	public static readonly string CHANGEANDROIDAUTOCOMPRESSSETTING = "Android AutoCompress Setting";
+	
 	public enum TextureModifierType {
 		None,
 		PremultipliedAlpha,
@@ -411,7 +424,7 @@ public class TextureModifier : AssetPostprocessor {
 		if (!String.IsNullOrEmpty (importer.spritePackingTag))
 			return;
 		if(effecterType!=TextureModifierType.None || modifierType!=TextureModifierType.None || outputType!=TextureModifierType.None){
-			if(!EditorPrefs.GetBool(FORCESTMSETTING, true))
+			if(!SimpleTextureModifierSettings.ForceFormatSetting)
 				return;
 			importer.alphaIsTransparency=false;
 //			importer.compressionQuality = (int)TextureCompressionQuality.Best;
@@ -560,7 +573,7 @@ public class TextureModifier : AssetPostprocessor {
 			break;
 		}}
         //return;
-        if (EditorPrefs.GetBool(KEY, true)) {
+        if (EditorPrefs.GetBool(TextureOutput, true)) {
             switch (outputType) {
                 case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
