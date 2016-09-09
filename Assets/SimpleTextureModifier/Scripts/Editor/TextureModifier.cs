@@ -397,6 +397,45 @@ public class TextureModifier : AssetPostprocessor {
 			}
 		}
 
+
+		if(SimpleTextureModifierSettings.ForceQualitytSetting){
+			importer.compressionQuality=SimpleTextureModifierSettings.CompressQuality;
+			importer.SetAllowsAlphaSplitting( SimpleTextureModifierSettings.ForceSplitAlpha );
+		}
+		if(SimpleTextureModifierSettings.ForceIOSQualitytSetting){
+			int maxTextureSize;
+			TextureImporterFormat textureFormat;
+			int compressionQuality;
+			if(importer.GetPlatformTextureSettings("iPhone",out maxTextureSize,out textureFormat,out compressionQuality)){
+				importer.SetPlatformTextureSettings("iPhone",maxTextureSize,textureFormat,SimpleTextureModifierSettings.CompressIOSQuality,SimpleTextureModifierSettings.ForceIOSSplitAlpha);
+			}
+			if(EditorUserBuildSettings.activeBuildTarget==BuildTarget.iOS){
+				importer.compressionQuality=SimpleTextureModifierSettings.CompressIOSQuality;
+					importer.SetAllowsAlphaSplitting(SimpleTextureModifierSettings.ForceSplitAlpha);
+			}
+		}
+		if (SimpleTextureModifierSettings.ForceIOSQualitytSetting) {
+			int maxTextureSize;
+			TextureImporterFormat textureFormat;
+			int compressionQuality;
+			if (importer.GetPlatformTextureSettings (BuildTarget.Android.ToString(), out maxTextureSize, out textureFormat, out compressionQuality)) {
+				importer.SetPlatformTextureSettings (BuildTarget.Android.ToString(), maxTextureSize, textureFormat, SimpleTextureModifierSettings.CompressAndroidQuality, SimpleTextureModifierSettings.ForceAndroidSplitAlpha);
+			}
+			if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android) {
+				importer.compressionQuality = SimpleTextureModifierSettings.CompressAndroidQuality;
+				importer.SetAllowsAlphaSplitting(SimpleTextureModifierSettings.ForceAndroidSplitAlpha);
+			}
+		}
+		if(EditorUserBuildSettings.activeBuildTarget==BuildTarget.Android && SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting && importer.textureFormat == TextureImporterFormat.AutomaticCompressed){
+			int maxTextureSize;
+			TextureImporterFormat textureFormat;
+			int compressionQuality;
+			if( importer.DoesSourceTextureHaveAlpha() && !importer.GetPlatformTextureSettings(BuildTarget.Android.ToString(),out maxTextureSize,out textureFormat,out compressionQuality)){
+				importer.SetPlatformTextureSettings(BuildTarget.Android.ToString(),maxTextureSize,TextureImporterFormat.RGBA16,compressionQuality,false);
+			}
+		}
+
+
 		UnityEngine.Object obj=AssetDatabase.LoadAssetAtPath(assetPath,typeof(Texture2D));
 		var labels=new List<string>(AssetDatabase.GetLabels(obj));
         if (labels == null || labels.Count == 0) {
@@ -421,6 +460,9 @@ public class TextureModifier : AssetPostprocessor {
 				}
 			}
 		}
+
+
+
 		if (!String.IsNullOrEmpty (importer.spritePackingTag))
 			return;
 		if(effecterType!=TextureModifierType.None || modifierType!=TextureModifierType.None || outputType!=TextureModifierType.None){
@@ -525,13 +567,16 @@ public class TextureModifier : AssetPostprocessor {
 				}
 				importer.textureFormat = TextureImporterFormat.AutomaticCompressed;
 				break;
-			case 'm':				
+			case 'm':
 				int num = GetNum (queue);
 				if (num <= 0)
 					break;
 				int max = (int)Mathf.Pow (2,Mathf.Floor (Mathf.Log (num - 1,2)) + 1);
 				if (max >= 32 && max <= 8192)
 					importer.maxTextureSize = max;
+				break;
+			case 'd':
+				importer.SetAllowsAlphaSplitting (true);
 				break;
 			}
 		}
