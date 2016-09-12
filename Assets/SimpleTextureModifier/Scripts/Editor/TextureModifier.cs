@@ -397,7 +397,6 @@ public class TextureModifier : AssetPostprocessor {
 			}
 		}
 
-
 		if(SimpleTextureModifierSettings.ForceQualitytSetting){
 			importer.compressionQuality=SimpleTextureModifierSettings.CompressQuality;
 			importer.SetAllowsAlphaSplitting( SimpleTextureModifierSettings.ForceSplitAlpha );
@@ -618,7 +617,7 @@ public class TextureModifier : AssetPostprocessor {
 			break;
 		}}
         //return;
-        if (EditorPrefs.GetBool(TextureOutput, true)) {
+		if (SimpleTextureModifierSettings.Output) {
             switch (outputType) {
                 case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
@@ -717,15 +716,17 @@ public class TextureModifier : AssetPostprocessor {
 		return tex;
 	}
 
-	void WriteTexture(Texture2D texture,TextureFormat format,string path,string extension){
+	Texture2D WriteTexture(Texture2D texture,TextureFormat format,string path,string extension){
 		EditorUtility.CompressTexture (texture,format,TextureCompressionQuality.Best);
 		var writePath = path.Substring(0,path.LastIndexOf('.'))+extension;
 		var writeAsset = AssetDatabase.LoadAssetAtPath (writePath,typeof(Texture2D)) as Texture2D;
 		if (writeAsset == null) {
 			AssetDatabase.CreateAsset (texture, writePath);
+			writeAsset = AssetDatabase.LoadAssetAtPath (writePath,typeof(Texture2D)) as Texture2D;
 		} else {
 			EditorUtility.CopySerialized (texture, writeAsset);
 		}
+		return writeAsset;
 	}
 
 	void WritePNGTexture(Texture2D texture,TextureFormat format,string path,string extension){
@@ -759,7 +760,7 @@ public class TextureModifier : AssetPostprocessor {
 		WriteTexture(mask,CompressionFormat,assetPath,"Alpha.asset");
 	}
 
-	void WriteAlphaTexture(Color[] pixels,Texture2D texture){
+	Texture2D WriteAlphaTexture(Color[] pixels,Texture2D texture){
 		var mask = new Texture2D (texture.width, texture.height, TextureFormat.RGB24, false);
 		mask.wrapMode = texture.wrapMode;
 		mask.filterMode = texture.filterMode;
@@ -772,7 +773,7 @@ public class TextureModifier : AssetPostprocessor {
 		}
 		mask.SetPixels (aPixels);
 		mask.Apply(true,true);
-		WriteTexture(mask,CompressionFormat,assetPath,"Alpha.asset");
+		return WriteTexture(mask,CompressionFormat,assetPath,"Alpha.asset");
 	}
 
 	static public Color[] PremultipliedAlpha(Color[] pixels){
