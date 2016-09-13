@@ -14,6 +14,16 @@ public class SimpleTextureModifierSettings : EditorScriptableSingleton<SimpleTex
 	static public bool ForceFormatSetting {
 		get { return instance.m_ForceFormatSetting; }
 		set { instance.m_ForceFormatSetting = value; }}
+	[SerializeField]
+	bool m_ForceFileNameIndicator;
+	static public bool ForceFileNameIndicator {
+		get { return instance.m_ForceFileNameIndicator; }
+		set { instance.m_ForceFileNameIndicator = value; }}
+	[SerializeField]
+	bool m_BuildSplitAlphaMaterial;
+	static public bool BuildSplitAlphaMaterial {
+		get { return instance.m_BuildSplitAlphaMaterial; }
+		set { instance.m_BuildSplitAlphaMaterial = value; }}
 
 	[SerializeField]
 	bool m_ForceQualitytSetting;
@@ -25,11 +35,6 @@ public class SimpleTextureModifierSettings : EditorScriptableSingleton<SimpleTex
 	static public int CompressQuality {
 		get { return instance.m_CompressQuality; }
 		set { instance.m_CompressQuality = value; }}
-	[SerializeField]
-	bool m_ForceSplitAlpha;
-	static public bool ForceSplitAlpha {
-		get { return instance.m_ForceSplitAlpha; }
-		set { instance.m_ForceSplitAlpha = value; }}
 
 	[SerializeField]
 	bool m_ForceIOSQualitytSetting;
@@ -41,12 +46,6 @@ public class SimpleTextureModifierSettings : EditorScriptableSingleton<SimpleTex
 	static public int CompressIOSQuality {
 		get { return instance.m_CompressIOSQuality; }
 		set { instance.m_CompressIOSQuality = value; }}
-	[SerializeField]
-	bool m_ForceIOSSplitAlpha;
-	static public bool ForceIOSSplitAlpha {
-		get { return instance.m_ForceIOSSplitAlpha; }
-		set { instance.m_ForceIOSSplitAlpha = value; }}
-
 
 	[SerializeField]
 	bool m_ForceAndroidQualitytSetting;
@@ -59,10 +58,6 @@ public class SimpleTextureModifierSettings : EditorScriptableSingleton<SimpleTex
 		get { return instance.m_CompressAndroidQuality; }
 		set { instance.m_CompressAndroidQuality = value; }}
 	[SerializeField]
-	bool m_ForceAndroidSplitAlpha;
-	static public bool ForceAndroidSplitAlpha {
-		get { return instance.m_ForceAndroidSplitAlpha; }
-		set { instance.m_ForceAndroidSplitAlpha = value; }}
 	bool m_ChangAndroidAutoCompressSetting;
 	static public bool ChangAndroidAutoCompressSetting {
 		get { return instance.m_ChangAndroidAutoCompressSetting; }
@@ -72,18 +67,17 @@ public class SimpleTextureModifierSettings : EditorScriptableSingleton<SimpleTex
 	protected override void OnCreateInstance() {
 		m_Output = true;
 		m_ForceFormatSetting = true;
+		m_ForceFileNameIndicator = true;
+		m_BuildSplitAlphaMaterial = true;
 
 		m_ForceQualitytSetting = false;
 		m_CompressQuality = (int)TextureCompressionQuality.Normal;
-		m_ForceSplitAlpha = false;;
 
 		m_ForceIOSQualitytSetting = false;
 		m_CompressIOSQuality = (int)TextureCompressionQuality.Normal;;
-		m_ForceIOSSplitAlpha = false;;
 
 		m_ForceAndroidQualitytSetting = false;
 		m_CompressAndroidQuality = (int)TextureCompressionQuality.Normal;;
-		m_ForceAndroidSplitAlpha = false;;
 		m_ChangAndroidAutoCompressSetting = false;;
 	}
 }

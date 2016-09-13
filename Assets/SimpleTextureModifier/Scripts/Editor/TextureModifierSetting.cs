@@ -4,30 +4,44 @@ using System.Collections;
 
 namespace SimpleTextureModifier {
 public class TextureModifierSetting {
+	static readonly string TextureOutput = "Texture Output Enable";
+	static readonly string FORCEFORMATSETTING = "Force Format Setting";
+	static readonly string FORCEFILENAMEINDICATOR = "Force FileName Indicator";
+	static readonly string BUILDSPLITALPHAMATERIA = "Build SplitAlpha Material";
+
+	static readonly string FORCEQUALITYSETTING = "Force Quality Setting";
+	static readonly string COMPRESSIONQUALITY = "Compression Quality";
+
+	static readonly string FORCIOSQUALITYSETTING = "Force IOS Setting";
+	static readonly string IOSQUALITY = "IOS Compression Quality";
+
+	static readonly string FORCEANDROIDQUALITYSETTING = "Force Android Setting";
+	static readonly string ANDROIDQUALITY = "Android Compression Quality";
+	static readonly string CHANGEANDROIDAUTOCOMPRESSSETTING = "Android AutoCompress Setting";
+
 	[PreferenceItem("TextureSetting")]
     public static void ShowPreference() {
-		SimpleTextureModifierSettings.Output = EditorGUILayout.Toggle(TextureModifier.TextureOutput, SimpleTextureModifierSettings.Output);
-		SimpleTextureModifierSettings.ForceFormatSetting = EditorGUILayout.Toggle(TextureModifier.FORCEFORMATSETTING, SimpleTextureModifierSettings.ForceFormatSetting);
+		SimpleTextureModifierSettings.Output = EditorGUILayout.Toggle(TextureOutput, SimpleTextureModifierSettings.Output);
+		SimpleTextureModifierSettings.ForceFormatSetting = EditorGUILayout.Toggle(FORCEFORMATSETTING, SimpleTextureModifierSettings.ForceFormatSetting);
+		SimpleTextureModifierSettings.ForceFileNameIndicator = EditorGUILayout.Toggle(FORCEFILENAMEINDICATOR, SimpleTextureModifierSettings.ForceFileNameIndicator);
+		SimpleTextureModifierSettings.BuildSplitAlphaMaterial = EditorGUILayout.Toggle(BUILDSPLITALPHAMATERIA, SimpleTextureModifierSettings.BuildSplitAlphaMaterial);
 	
-		SimpleTextureModifierSettings.ForceQualitytSetting = EditorGUILayout.Toggle(TextureModifier.FORCEQUALITYSETTING, SimpleTextureModifierSettings.ForceQualitytSetting);
+		SimpleTextureModifierSettings.ForceQualitytSetting = EditorGUILayout.Toggle(FORCEQUALITYSETTING, SimpleTextureModifierSettings.ForceQualitytSetting);
 		if (SimpleTextureModifierSettings.ForceQualitytSetting) {
-			SimpleTextureModifierSettings.CompressQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (TextureModifier.COMPRESSIONQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressQuality);
-			SimpleTextureModifierSettings.ForceSplitAlpha = EditorGUILayout.Toggle (TextureModifier.FORCESPLITALPHA, SimpleTextureModifierSettings.ForceSplitAlpha);
+			SimpleTextureModifierSettings.CompressQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (COMPRESSIONQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressQuality);
 		}
 
-		SimpleTextureModifierSettings.ForceIOSQualitytSetting = EditorGUILayout.Toggle(TextureModifier.FORCIOSQUALITYSETTING, SimpleTextureModifierSettings.ForceIOSQualitytSetting);
+		SimpleTextureModifierSettings.ForceIOSQualitytSetting = EditorGUILayout.Toggle(FORCIOSQUALITYSETTING, SimpleTextureModifierSettings.ForceIOSQualitytSetting);
 		if (SimpleTextureModifierSettings.ForceIOSQualitytSetting) {
-			SimpleTextureModifierSettings.CompressIOSQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (TextureModifier.IOSQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressIOSQuality);
-			SimpleTextureModifierSettings.ForceIOSSplitAlpha = EditorGUILayout.Toggle (TextureModifier.IOSSPLITALPHA, SimpleTextureModifierSettings.ForceIOSSplitAlpha);
+			SimpleTextureModifierSettings.CompressIOSQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (IOSQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressIOSQuality);
 		}
 
-		SimpleTextureModifierSettings.ForceAndroidQualitytSetting = EditorGUILayout.Toggle(TextureModifier.FORCEANDROIDQUALITYSETTING, SimpleTextureModifierSettings.ForceAndroidQualitytSetting);
+		SimpleTextureModifierSettings.ForceAndroidQualitytSetting = EditorGUILayout.Toggle(FORCEANDROIDQUALITYSETTING, SimpleTextureModifierSettings.ForceAndroidQualitytSetting);
 		if (SimpleTextureModifierSettings.ForceAndroidQualitytSetting) {
-			SimpleTextureModifierSettings.CompressAndroidQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (TextureModifier.ANDROIDQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressAndroidQuality);
-			SimpleTextureModifierSettings.ForceAndroidSplitAlpha = EditorGUILayout.Toggle (TextureModifier.ANDROIDSPLITALPHA, SimpleTextureModifierSettings.ForceAndroidSplitAlpha);
+			SimpleTextureModifierSettings.CompressAndroidQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (ANDROIDQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressAndroidQuality);
 		}
 
-		SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting = EditorGUILayout.Toggle(TextureModifier.CHANGEANDROIDAUTOCOMPRESSSETTING, SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting);
+		SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting = EditorGUILayout.Toggle(CHANGEANDROIDAUTOCOMPRESSSETTING, SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting);
 
 		if (GUI.changed) {
 			SimpleTextureModifierSettings.Save ();

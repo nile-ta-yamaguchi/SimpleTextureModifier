@@ -128,22 +128,6 @@ public class StartupTextureModifier {
 }
 
 public class TextureModifier : AssetPostprocessor {
-	public static readonly string TextureOutput = "Texture Output Enable";
-	public static readonly string FORCEFORMATSETTING = "Force Format Setting";
-
-	public static readonly string FORCEQUALITYSETTING = "Force Quality Setting";
-	public static readonly string COMPRESSIONQUALITY = "Compression Quality";
-	public static readonly string FORCESPLITALPHA = "Force Split Alpha";
-
-	public static readonly string FORCIOSQUALITYSETTING = "Force IOS Setting";
-	public static readonly string IOSQUALITY = "IOS Compression Quality";
-	public static readonly string IOSSPLITALPHA = "IOS Split Alpha";
-
-	public static readonly string FORCEANDROIDQUALITYSETTING = "Force Android Setting";
-	public static readonly string ANDROIDQUALITY = "Android Compression Quality";
-	public static readonly string ANDROIDSPLITALPHA = "Android Split Alpha";
-	public static readonly string CHANGEANDROIDAUTOCOMPRESSSETTING = "Android AutoCompress Setting";
-	
 	public enum TextureModifierType {
 		None,
 		PremultipliedAlpha,
@@ -386,43 +370,42 @@ public class TextureModifier : AssetPostprocessor {
 	void OnPreprocessTexture(){
 		//return;
 		var importer = (assetImporter as TextureImporter);
-		string filename = System.IO.Path.GetFileNameWithoutExtension (assetPath);
-		var filenameParts = filename.ToLower().Split("_".ToCharArray()).ToList ();
-		foreach (string part in filenameParts) {
-			if(part.StartsWith(TTextureModifier)){
-				PersModifier (part.Substring(TTextureModifier.Length));
-			}
-			if(part.StartsWith(TTextureSetting)){
-				PersSetting (part.Substring(TTextureSetting.Length));
+		if(SimpleTextureModifierSettings.ForceFileNameIndicator) {
+			string filename = System.IO.Path.GetFileNameWithoutExtension (assetPath);
+			var filenameParts = filename.ToLower().Split("_".ToCharArray()).ToList ();
+			foreach (string part in filenameParts) {
+				if (part.StartsWith (TTextureModifier)) {
+					PersModifier (part.Substring (TTextureModifier.Length));
+				}
+				if (part.StartsWith (TTextureSetting)) {
+					PersSetting (part.Substring (TTextureSetting.Length));
+				}
 			}
 		}
 
 		if(SimpleTextureModifierSettings.ForceQualitytSetting){
 			importer.compressionQuality=SimpleTextureModifierSettings.CompressQuality;
-			importer.SetAllowsAlphaSplitting( SimpleTextureModifierSettings.ForceSplitAlpha );
 		}
 		if(SimpleTextureModifierSettings.ForceIOSQualitytSetting){
 			int maxTextureSize;
 			TextureImporterFormat textureFormat;
 			int compressionQuality;
 			if(importer.GetPlatformTextureSettings("iPhone",out maxTextureSize,out textureFormat,out compressionQuality)){
-				importer.SetPlatformTextureSettings("iPhone",maxTextureSize,textureFormat,SimpleTextureModifierSettings.CompressIOSQuality,SimpleTextureModifierSettings.ForceIOSSplitAlpha);
+				importer.SetPlatformTextureSettings("iPhone",maxTextureSize,textureFormat,SimpleTextureModifierSettings.CompressIOSQuality,false);
 			}
 			if(EditorUserBuildSettings.activeBuildTarget==BuildTarget.iOS){
 				importer.compressionQuality=SimpleTextureModifierSettings.CompressIOSQuality;
-					importer.SetAllowsAlphaSplitting(SimpleTextureModifierSettings.ForceSplitAlpha);
 			}
 		}
-		if (SimpleTextureModifierSettings.ForceIOSQualitytSetting) {
+		if (SimpleTextureModifierSettings.ForceAndroidQualitytSetting) {
 			int maxTextureSize;
 			TextureImporterFormat textureFormat;
 			int compressionQuality;
 			if (importer.GetPlatformTextureSettings (BuildTarget.Android.ToString(), out maxTextureSize, out textureFormat, out compressionQuality)) {
-				importer.SetPlatformTextureSettings (BuildTarget.Android.ToString(), maxTextureSize, textureFormat, SimpleTextureModifierSettings.CompressAndroidQuality, SimpleTextureModifierSettings.ForceAndroidSplitAlpha);
+				importer.SetPlatformTextureSettings (BuildTarget.Android.ToString(), maxTextureSize, textureFormat, SimpleTextureModifierSettings.CompressAndroidQuality,false);
 			}
 			if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android) {
 				importer.compressionQuality = SimpleTextureModifierSettings.CompressAndroidQuality;
-				importer.SetAllowsAlphaSplitting(SimpleTextureModifierSettings.ForceAndroidSplitAlpha);
 			}
 		}
 		if(EditorUserBuildSettings.activeBuildTarget==BuildTarget.Android && SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting && importer.textureFormat == TextureImporterFormat.AutomaticCompressed){
@@ -592,7 +575,41 @@ public class TextureModifier : AssetPostprocessor {
 		}
 		return 0;
 	}
+	
+	static TextureCompressionQuality GetPlatformTextureCompressionQuality(){
+		TextureCompressionQuality quality = TextureCompressionQuality.Normal;
+		if(SimpleTextureModifierSettings.ForceIOSQualitytSetting && EditorUserBuildSettings.activeBuildTarget==BuildTarget.iOS){
+			quality=(TextureCompressionQuality)SimpleTextureModifierSettings.CompressIOSQuality;
+		}else if(SimpleTextureModifierSettings.ForceAndroidQualitytSetting && EditorUserBuildSettings.activeBuildTarget==BuildTarget.Android){
+			quality=(TextureCompressionQuality)SimpleTextureModifierSettings.CompressAndroidQuality;
+		}else if(SimpleTextureModifierSettings.ForceQualitytSetting){
+			quality=(TextureCompressionQuality)SimpleTextureModifierSettings.CompressQuality;
+		}
+		return quality;
+	}
 
+	static void createMaterialWithAlpha(string textureName) {
+		string alphaName= textureName.Substring(0,textureName.LastIndexOf('.'))+"Alpha.asset";
+		string matName = Path.ChangeExtension(textureName, ".mat");
+		if (!File.Exists(matName)){
+			Texture2D texture2D = AssetDatabase.LoadAssetAtPath(textureName, typeof(Texture2D)) as Texture2D;
+			Texture2D texture2D1 = AssetDatabase.LoadAssetAtPath(alphaName, typeof(Texture2D)) as Texture2D;
+			if (texture2D1 == null) {
+				return;
+			}
+			bool flag = true;
+			Shader shader = Shader.Find("Custom/WithMask");
+			if (shader == null) {
+				return;
+			}
+			Material material = new Material(shader);
+			material.SetTexture("_MainTex", texture2D);
+			material.SetTexture("_MaskTex", texture2D1);
+			AssetDatabase.CreateAsset(material, matName);
+			EditorUtility.SetDirty(material);
+		}
+	}
+	
 	void OnPostprocessTexture (Texture2D texture){
 		if(effecterType==TextureModifierType.None && modifierType==TextureModifierType.None && outputType==TextureModifierType.None)
 			return;
@@ -622,26 +639,28 @@ public class TextureModifier : AssetPostprocessor {
                 case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
                     texture.Apply(true, true);
-                    EditorUtility.CompressTexture(texture, TextureFormat.RGBA4444, TextureCompressionQuality.Best); 
+						EditorUtility.CompressTexture(texture, TextureFormat.RGBA4444, GetPlatformTextureCompressionQuality()); 
                     break;
                 }
                 case TextureModifierType.CCompressed: {
                     texture.SetPixels(pixels);
                     texture.Apply(true, true);
-                    EditorUtility.CompressTexture(texture, CompressionWithAlphaFormat, TextureCompressionQuality.Best);
+					EditorUtility.CompressTexture(texture, CompressionWithAlphaFormat, GetPlatformTextureCompressionQuality());
                     break;
                 }
                 case TextureModifierType.CCompressedNA: {
                     texture.SetPixels(pixels);
                     texture.Apply(true, true);
-                    EditorUtility.CompressTexture(texture, CompressionFormat, TextureCompressionQuality.Best);
+					EditorUtility.CompressTexture(texture, CompressionFormat, GetPlatformTextureCompressionQuality());
                     break;
                 }
                 case TextureModifierType.CCompressedWA: {
                     WriteAlphaTexture(pixels, texture);
                     texture.SetPixels(pixels);
                     texture.Apply(true, true);
-                    EditorUtility.CompressTexture(texture, CompressionFormat, TextureCompressionQuality.Best);
+					EditorUtility.CompressTexture(texture, CompressionFormat, GetPlatformTextureCompressionQuality());
+					if(SimpleTextureModifierSettings.BuildSplitAlphaMaterial)
+						createMaterialWithAlpha (assetPath);
                     break;
                 }
                 case TextureModifierType.TCompressed: {
@@ -664,6 +683,8 @@ public class TextureModifier : AssetPostprocessor {
                    tex.SetPixels(pixels);
                    tex.Apply(true, true);
                    WriteTexture(tex, CompressionFormat, assetPath, ".asset");
+					if(SimpleTextureModifierSettings.BuildSplitAlphaMaterial)
+						createMaterialWithAlpha (Path.ChangeExtension(assetPath,".asset"));						
                    break;
                }
                case TextureModifierType.T16bits: {
@@ -717,7 +738,7 @@ public class TextureModifier : AssetPostprocessor {
 	}
 
 	Texture2D WriteTexture(Texture2D texture,TextureFormat format,string path,string extension){
-		EditorUtility.CompressTexture (texture,format,TextureCompressionQuality.Best);
+		EditorUtility.CompressTexture (texture,format,GetPlatformTextureCompressionQuality());
 		var writePath = path.Substring(0,path.LastIndexOf('.'))+extension;
 		var writeAsset = AssetDatabase.LoadAssetAtPath (writePath,typeof(Texture2D)) as Texture2D;
 		if (writeAsset == null) {
@@ -730,7 +751,7 @@ public class TextureModifier : AssetPostprocessor {
 	}
 
 	void WritePNGTexture(Texture2D texture,TextureFormat format,string path,string extension){
-		EditorUtility.CompressTexture (texture,format,TextureCompressionQuality.Best);
+		EditorUtility.CompressTexture (texture,format,GetPlatformTextureCompressionQuality());
 		byte[] pngData=texture.EncodeToPNG();
 		//var nPath=path.Substring(0,path.LastIndexOf('.'))+extension;
 		var writePath = Application.dataPath+(path.Substring(0,path.LastIndexOf('.'))+extension).Substring(6);
@@ -740,7 +761,7 @@ public class TextureModifier : AssetPostprocessor {
 	}
 
 	void WriteJPGTexture(Texture2D texture,TextureFormat format,string path,string extension){
-		EditorUtility.CompressTexture (texture,format,TextureCompressionQuality.Best);
+		EditorUtility.CompressTexture (texture,format,GetPlatformTextureCompressionQuality());
 		byte[] jpgData=texture.EncodeToJPG();
 		//var nPath=path.Substring(0,path.LastIndexOf('.'))+extension;
 		var writePath = Application.dataPath+(path.Substring(0,path.LastIndexOf('.'))+extension).Substring(6);
