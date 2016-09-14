@@ -27,22 +27,28 @@ public class TextureModifierSetting {
 		SimpleTextureModifierSettings.BuildSplitAlphaMaterial = EditorGUILayout.Toggle(BUILDSPLITALPHAMATERIA, SimpleTextureModifierSettings.BuildSplitAlphaMaterial);
 	
 		SimpleTextureModifierSettings.ForceQualitytSetting = EditorGUILayout.Toggle(FORCEQUALITYSETTING, SimpleTextureModifierSettings.ForceQualitytSetting);
-		if (SimpleTextureModifierSettings.ForceQualitytSetting) {
-			SimpleTextureModifierSettings.CompressQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (COMPRESSIONQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressQuality);
+		EditorGUI.DisabledScope disabledScope0 = new EditorGUI.DisabledScope(!SimpleTextureModifierSettings.ForceQualitytSetting);
+		try {
+				SimpleTextureModifierSettings.CompressQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (COMPRESSIONQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressQuality);
+		} finally {
+				disabledScope0.Dispose();
 		}
-
 		SimpleTextureModifierSettings.ForceIOSQualitytSetting = EditorGUILayout.Toggle(FORCIOSQUALITYSETTING, SimpleTextureModifierSettings.ForceIOSQualitytSetting);
-		if (SimpleTextureModifierSettings.ForceIOSQualitytSetting) {
+		EditorGUI.DisabledScope disabledScope1 = new EditorGUI.DisabledScope(!SimpleTextureModifierSettings.ForceIOSQualitytSetting);
+		try {
 			SimpleTextureModifierSettings.CompressIOSQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (IOSQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressIOSQuality);
+		} finally {
+			disabledScope1.Dispose();
 		}
-
 		SimpleTextureModifierSettings.ForceAndroidQualitytSetting = EditorGUILayout.Toggle(FORCEANDROIDQUALITYSETTING, SimpleTextureModifierSettings.ForceAndroidQualitytSetting);
-		if (SimpleTextureModifierSettings.ForceAndroidQualitytSetting) {
+		EditorGUI.DisabledScope disabledScope2 = new EditorGUI.DisabledScope(!SimpleTextureModifierSettings.ForceAndroidQualitytSetting);
+		try {
 			SimpleTextureModifierSettings.CompressAndroidQuality = (int)(TextureCompressionQuality)EditorGUILayout.EnumPopup (ANDROIDQUALITY, (TextureCompressionQuality)SimpleTextureModifierSettings.CompressAndroidQuality);
+		} finally {
+			disabledScope2.Dispose();
 		}
 
 		SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting = EditorGUILayout.Toggle(CHANGEANDROIDAUTOCOMPRESSSETTING, SimpleTextureModifierSettings.ChangAndroidAutoCompressSetting);
-
 		if (GUI.changed) {
 			SimpleTextureModifierSettings.Save ();
 		}
