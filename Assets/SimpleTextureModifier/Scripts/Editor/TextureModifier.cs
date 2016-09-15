@@ -668,7 +668,7 @@ public class TextureModifier : AssetPostprocessor {
 		return quality;
 	}
 
-	static void createMaterialWithAlpha(string textureName) {
+	static void createMaterialWithAlpha(string textureName,TextureModifierType tmt) {
 		string alphaName= textureName.Substring(0,textureName.LastIndexOf('.'))+"Alpha.asset";
 		string matName = Path.ChangeExtension(textureName, ".mat");
 		if (!File.Exists(matName)){
@@ -678,7 +678,11 @@ public class TextureModifier : AssetPostprocessor {
 				return;
 			}
 			bool flag = true;
-			Shader shader = Shader.Find("Custom/WithMask");
+			Shader shader;
+			if(tmt==TextureModifierType.PremultipliedAlpha)
+				shader = Shader.Find("Custom/WithMaskPremultiplied");
+			else
+				shader = Shader.Find("Custom/WithMask");
 			if (shader == null) {
 				return;
 			}
@@ -715,11 +719,11 @@ public class TextureModifier : AssetPostprocessor {
 		}}
         //return;
 		if (SimpleTextureModifierSettings.Output) {
-            switch (outputType) {
-                case TextureModifierType.C16bits: {
+			switch (outputType) {
+				case TextureModifierType.C16bits: {
                     texture.SetPixels(pixels);
                     texture.Apply(true, true);
-						EditorUtility.CompressTexture(texture, TextureFormat.RGBA4444, GetPlatformTextureCompressionQuality()); 
+					EditorUtility.CompressTexture(texture, TextureFormat.RGBA4444, GetPlatformTextureCompressionQuality()); 
                     break;
                 }
                 case TextureModifierType.CCompressed: {
@@ -740,15 +744,15 @@ public class TextureModifier : AssetPostprocessor {
                     texture.Apply(true, true);
 					EditorUtility.CompressTexture(texture, CompressionFormat, GetPlatformTextureCompressionQuality());
 					if(SimpleTextureModifierSettings.BuildSplitAlphaMaterial)
-						createMaterialWithAlpha (assetPath);
+						createMaterialWithAlpha (assetPath,effecterType);
                     break;
                 }
                 case TextureModifierType.TCompressed: {
-                   var tex = BuildTexture(texture, TextureFormat.RGBA32);
-                   tex.SetPixels(pixels);
-                   tex.Apply(true, true);
-                   WriteTexture(tex, CompressionWithAlphaFormat, assetPath, ".asset");
-                   break;
+					var tex = BuildTexture(texture, TextureFormat.RGBA32);
+                    tex.SetPixels(pixels);
+                    tex.Apply(true, true);
+                    WriteTexture(tex, CompressionWithAlphaFormat, assetPath, ".asset");
+                    break;
                }
                case TextureModifierType.TCompressedNA: {
                    var tex = BuildTexture(texture, TextureFormat.RGBA32);
@@ -763,8 +767,8 @@ public class TextureModifier : AssetPostprocessor {
                    tex.SetPixels(pixels);
                    tex.Apply(true, true);
                    WriteTexture(tex, CompressionFormat, assetPath, ".asset");
-					if(SimpleTextureModifierSettings.BuildSplitAlphaMaterial)
-						createMaterialWithAlpha (Path.ChangeExtension(assetPath,".asset"));						
+				   if(SimpleTextureModifierSettings.BuildSplitAlphaMaterial)
+						createMaterialWithAlpha (Path.ChangeExtension(assetPath,".asset"),effecterType);						
                    break;
                }
                case TextureModifierType.T16bits: {
