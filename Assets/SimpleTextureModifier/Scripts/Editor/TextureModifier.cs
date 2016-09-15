@@ -130,10 +130,13 @@ public class StartupTextureModifier {
 public class TextureModifier : AssetPostprocessor {
 	public enum TextureModifierType {
 		None,
+		NoEffect,
 		PremultipliedAlpha,
 		AlphaBleed,
+		NoModifier,
 		FloydSteinberg,
 		Reduced16bits,
+		NoConvert,
         C16bits,
         CCompressed,
         CCompressedNA,
@@ -251,9 +254,9 @@ public class TextureModifier : AssetPostprocessor {
 		}
 	}
 
-	public readonly static List<TextureModifierType> effecters=new List<TextureModifierType>{TextureModifierType.PremultipliedAlpha,TextureModifierType.AlphaBleed};
-    public readonly static List<TextureModifierType> modifiers = new List<TextureModifierType> { TextureModifierType.FloydSteinberg, TextureModifierType.Reduced16bits };
-    public readonly static List<TextureModifierType> outputs = new List<TextureModifierType>{TextureModifierType.TJPG,TextureModifierType.TPNG,TextureModifierType.T32bits,TextureModifierType.T16bits,TextureModifierType.C16bits
+	public readonly static List<TextureModifierType> effecters=new List<TextureModifierType>{ TextureModifierType.NoEffect,TextureModifierType.PremultipliedAlpha,TextureModifierType.AlphaBleed};
+	public readonly static List<TextureModifierType> modifiers = new List<TextureModifierType> { TextureModifierType.NoModifier, TextureModifierType.FloydSteinberg, TextureModifierType.Reduced16bits };
+	public readonly static List<TextureModifierType> outputs = new List<TextureModifierType>{ TextureModifierType.NoConvert,TextureModifierType.TJPG,TextureModifierType.TPNG,TextureModifierType.T32bits,TextureModifierType.T16bits,TextureModifierType.C16bits
                                                                             ,TextureModifierType.CCompressed,TextureModifierType.CCompressedNA,TextureModifierType.CCompressedWA
 																			,TextureModifierType.TCompressed,TextureModifierType.TCompressedNA,TextureModifierType.TCompressedWA};
     public readonly static List<TextureModifierType> compressOutputs = new List<TextureModifierType>{
@@ -312,6 +315,12 @@ public class TextureModifier : AssetPostprocessor {
 		ClearLabel(effecters);
 		SetLabelSetingsDirty ();
 	}
+	[UnityEditor.MenuItem("Assets/Texture Util/Set Label No Effect",false,20)]
+	static void SetLabelNoEffect(){
+		ApplySettings ();
+		SetLabel(TextureModifierType.NoEffect.ToString(),effecters);
+		SetLabelSetingsDirty ();
+	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label PremultipliedAlpha",false,20)]
 	static void SetLabelPremultipliedAlpha(){
 		ApplySettings ();
@@ -331,6 +340,12 @@ public class TextureModifier : AssetPostprocessor {
 		ClearLabel(modifiers);
 		SetLabelSetingsDirty ();
 	}
+	[UnityEditor.MenuItem("Assets/Texture Util/Set Label No Modifier",false,40)]
+	static void SetLabelNoModifier(){
+		ApplySettings ();
+		SetLabel(TextureModifierType.NoModifier.ToString(),modifiers);
+		SetLabelSetingsDirty ();
+	}
 	[UnityEditor.MenuItem("Assets/Texture Util/Set Label FloydSteinberg",false,40)]
 	static void SetLabelFloydSteinberg(){
 		ApplySettings ();
@@ -348,6 +363,12 @@ public class TextureModifier : AssetPostprocessor {
 	static void ClearTextureOutputLabel(){
 		ApplySettings ();
 		ClearLabel(outputs);
+		SetLabelSetingsDirty ();
+	}
+	[UnityEditor.MenuItem("Assets/Texture Util/Set Label No Convert", false, 60)]
+	static void SetLabelNoConvert() {
+		ApplySettings ();
+		SetLabel(TextureModifierType.NoConvert.ToString(), outputs);
 		SetLabelSetingsDirty ();
 	}
     [UnityEditor.MenuItem("Assets/Texture Util/Set Label Convert 16bits", false, 60)]
@@ -530,10 +551,10 @@ public class TextureModifier : AssetPostprocessor {
 		while (queue.Count > 0) {
 			char token = queue.Dequeue ();
 			switch (token) {
-			case 'm':
+			case 'p':
 				effecterType = TextureModifierType.PremultipliedAlpha;
 				break;
-			case 'a':
+			case 'b':
 				effecterType = TextureModifierType.AlphaBleed;
 				break;
 			case 'd':
